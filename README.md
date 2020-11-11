@@ -9,6 +9,15 @@ $ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### shortcut 
+
+```bash
+# 自信の決めたルールから生成した解で点数計算をおこなう
+$ exec
+```
+
+### common 
 ```
 $ python rngbias.py < rand50.json
 {"objective": 81.14285714285714, "constraint": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "error": null}
