@@ -21,6 +21,8 @@ variable_jsonschema_template = """{
   "pattern": "^[1-6]*$"
 }"""
 
+inputStr = ""
+
 
 def variable_jsonschema(dim):
   return json.loads(variable_jsonschema_template % (dim, dim))
@@ -319,8 +321,6 @@ def main(ctx, **kwargs):
       ) for i in range(15)]
 
   def f(ixs, x):
-
-    print('array:' + str(x))
     return sum(errs[i](x) for i in ixs)
 
   x_str = kwargs['file'].readline()
@@ -329,23 +329,37 @@ def main(ctx, **kwargs):
 
   objs = [f(i, x) for i in kwargs['objectives']]
   cons = [g(d, x, kwargs['lower_bounds'][i], kwargs['upper_bounds'][i]) for i, d in enumerate(kwargs['constraints'])]
-  print("result:")
-  print_json({
-      'objective': None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs,
-      'constraint': None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons,
-      'error': None
-  }, kwargs['pretty'])
+  array = x
+  objective = None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs
+  constraint = None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons
+  result = {
+      'array': x,
+      'result': {
+          'objective': None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs,
+          'constraint': None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons,
+          'error': None
+      }
+  }
+
+  cStr = ','.join([str(item) for item in constraint])
+  print(','.join([str(array), str(objective)]) + cStr)
+
+  return result
 
 
-if __name__ == "__main__":
+def getResult(requireStr):
   try:
-    main(auto_envvar_prefix="RNGBIAS")   # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
+    result = main(auto_envvar_prefix="RNGBIAS")   # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
+    return result
   except Exception as e:
     _logger.error(format_exc())
-    print("result:")
     print_json({
         'objective': None,
         'constraint': None,
         'error': str(e)
     })
     sys.exit(1)
+
+
+if __name__ == "__main__":
+  getResult("123456789")
