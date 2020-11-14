@@ -19,5 +19,8 @@ if __name__ == "__main__":
         if count == 3:
           output = str(line).split(',')
           output[0] = str(output[0]).split("'")[1]
+          rtmp = output[1].split(".")
+          output[1] = str(rtmp[0] + "." + rtmp[1])
           output[len(output) - 1] = str(output[len(output) - 1]).split("\\")[0]
+          print(output)
           writer.writerow(output)

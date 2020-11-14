@@ -21,6 +21,8 @@ variable_jsonschema_template = """{
   "pattern": "^[1-6]*$"
 }"""
 
+inputStr = ""
+
 
 def variable_jsonschema(dim):
   return json.loads(variable_jsonschema_template % (dim, dim))
@@ -246,6 +248,7 @@ def g(dim, seq, pplb, ppub):
 def make_error_function(feature_func, alpha, beta, gamma):
   def error_func(x):
     feat = feature_func(x)
+    print(feat)
     return gamma * max(alpha - feat, feat - beta, 0)
 
   return error_func
@@ -253,6 +256,7 @@ def make_error_function(feature_func, alpha, beta, gamma):
 
 def load_config(ctx, value):
   """Load `ctx.default_map` from a file.
+
   :param ctx: Click context
   :param value: File name
   :return dict: Loaded config
@@ -268,6 +272,7 @@ def load_config(ctx, value):
 
 def json_list(ctx, param, value):
   """Load a list from a JSON string.
+
   :param value: JSON string
   :return list: Loaded list
   """
@@ -325,18 +330,30 @@ def main(ctx, **kwargs):
 
   objs = [f(i, x) for i in kwargs['objectives']]
   cons = [g(d, x, kwargs['lower_bounds'][i], kwargs['upper_bounds'][i]) for i, d in enumerate(kwargs['constraints'])]
-  print_json({
-      'objective': None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs,
-      'constraint': None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons,
-      'error': None
-  }, kwargs['pretty'])
+  array = x
+  objective = None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs
+  # print(objective)
+  # print(cons)
+  constraint = None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons
+  result = {
+      'array': x,
+      'result': {
+          'objective': None if len(objs) == 0 else objs[0] if len(objs) == 1 else objs,
+          'constraint': None if len(cons) == 0 else cons[0] if len(cons) == 1 else cons,
+          'error': None
+      }
+  }
+
+  cStr = ','.join([str(item) for item in constraint])
+  # print(','.join([str(array), str(float(objective))]) + cStr)
+
+  return result
 
 
-if __name__ == "__main__":
+def getResult(requireStr):
   try:
-    _logger.info('Start')
-    main(auto_envvar_prefix="RNGBIAS")   # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
-    _logger.info('Successfully finished')
+    result = main(auto_envvar_prefix="RNGBIAS")   # pylint: disable=no-value-for-parameter,unexpected-keyword-arg
+    return result
   except Exception as e:
     _logger.error(format_exc())
     print_json({
@@ -345,3 +362,7 @@ if __name__ == "__main__":
         'error': str(e)
     })
     sys.exit(1)
+
+
+if __name__ == "__main__":
+  getResult("123456789")
